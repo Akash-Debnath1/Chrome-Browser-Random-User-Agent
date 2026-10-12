@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Random User-Agent – Settings</title>
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body class="options-body">
+    <div class="layout">
+      <aside class="sidebar glass">
+        <div class="brand">
+          <div class="logo"><img src="../assets/icons/48.png" alt="" /></div>
+          <div>
+            <div class="brand-title">Random User-Agent</div>
+            <div class="brand-sub">Settings · <span id="version">v5.0.0</span></div>
+          </div>
+        </div>
+
+        <nav>
+          <a href="#general" data-tab="general" class="active">
+            <span class="nav-ico">⚙</span> General settings
+          </a>
+          <a href="#generator" data-tab="generator">
+            <span class="nav-ico">◎</span> Generator settings
+          </a>
+          <a href="#blacklist" data-tab="blacklist">
+            <span class="nav-ico">⊘</span> Blacklist settings
+          </a>
+        </nav>
+
+        <div class="side-foot">
+          <div class="label">Current User-Agent</div>
+          <pre id="currentUa" class="side-ua">None yet</pre>
+          <button id="renewBtn" class="btn wide" type="button">Get new agent</button>
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- ============ General ============ -->
+        <section id="tab-general" class="tab" data-section="general">
+          <header class="page-head">
+            <h1>General settings</h1>
+            <p class="lede">Choose how the switcher behaves.</p>
+          </header>
+
+          <div class="glass panel">
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Enable switcher</div>
+                <div class="row-hint">Turns the whole extension on or off.</div>
+              </div>
+              <label class="switch"><input id="enabled" type="checkbox" /><span class="track"></span></label>
+            </div>
+
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Change the User-Agent automatically</div>
+                <div class="row-hint">Picks a new User-Agent on a timer.</div>
+              </div>
+              <label class="switch"><input id="renewEnabled" type="checkbox" /><span class="track"></span></label>
+            </div>
+
+            <div class="row sub">
+              <div class="row-text">
+                <div class="row-title">Interval in seconds</div>
+                <div class="row-hint">Minimum 30. For example, 1 hour = 3600.</div>
+              </div>
+              <div class="inline">
+                <input id="intervalSec" class="num" type="number" min="30" step="1" />
+                <div class="quick">
+                  <button class="btn small" type="button" data-interval="300">5 min</button>
+                  <button class="btn small" type="button" data-interval="600">10 min</button>
+                  <button class="btn small" type="button" data-interval="3600">1 hour</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Change the User-Agent when the browser starts</div>
+                <div class="row-hint">A new User-Agent is picked every time the browser starts.</div>
+              </div>
+              <label class="switch"><input id="onStartup" type="checkbox" /><span class="track"></span></label>
+            </div>
+
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Protect against detection by JavaScript</div>
+                <div class="row-hint">Makes <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code> and <code>userAgentData</code> match the new User-Agent on every page, including iframes and workers that the page creates.</div>
+              </div>
+              <label class="switch"><input id="jsProtection" type="checkbox" /><span class="track"></span></label>
+            </div>
+          </div>
+
+          <div class="glass panel">
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Use your own User-Agents</div>
+                <div class="row-hint">When on, the switcher picks randomly from the list below instead of the generated ones.</div>
+              </div>
+              <label class="switch"><input id="customEnabled" type="checkbox" /><span class="track"></span></label>
+            </div>
+            <div class="stack">
+              <div class="row-split">
+                <span class="row-title">Custom User-Agents (one per line)</span>
+                <span id="customCount" class="muted small"></span>
+              </div>
+              <textarea id="customList" rows="6" spellcheck="false" placeholder="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36"></textarea>
+              <div class="inline between">
+                <span class="row-hint">Each line must be a full User-Agent string (printable ASCII, 10–1000 characters, with a Product/Version token).</span>
+                <div class="quick">
+                  <button id="customPasteExample" class="btn small" type="button">Add example</button>
+                  <button id="customClear" class="btn small danger" type="button">Clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Generator ============ -->
+        <section id="tab-generator" class="tab" data-section="generator" hidden>
+          <header class="page-head">
+            <h1>Generator settings</h1>
+            <p class="lede">Choose which browsers, systems and versions the switcher may pick from. Only enabled ones are used. Add any browser version you want with the field under each browser.</p>
+          </header>
+
+          <div class="bulk">
+            <button id="selectAll" class="btn small" type="button">Select all</button>
+            <button id="clearAll" class="btn small" type="button">Clear all</button>
+            <button id="useDefaults" class="btn small" type="button">Recommended set</button>
+          </div>
+
+          <h2 class="group-title">Desktop</h2>
+          <div id="desktopTypes" class="brand-grid"></div>
+
+          <h2 class="group-title">Mobile</h2>
+          <div id="mobileTypes" class="brand-grid"></div>
+
+          <div class="glass panel">
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Match the operating system of this computer</div>
+                <div class="row-hint">Only generate User-Agents for the OS you are running on (for example Windows only on Windows).</div>
+              </div>
+              <label class="switch"><input id="syncOs" type="checkbox" /><span class="track"></span></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ Blacklist / whitelist ============ -->
+        <section id="tab-blacklist" class="tab" data-section="blacklist" hidden>
+          <header class="page-head">
+            <h1>Blacklist settings</h1>
+            <p class="lede">Choose where the switcher runs.</p>
+          </header>
+
+          <div class="glass panel">
+            <div class="segmented" role="radiogroup" aria-label="Mode">
+              <label><input type="radio" name="mode" value="whitelist" /><span>Whitelist mode</span></label>
+              <label><input type="radio" name="mode" value="blacklist" /><span>Blacklist mode</span></label>
+            </div>
+            <p id="modeHint" class="row-hint mode-hint"></p>
+
+            <div class="stack">
+              <span class="row-title">Domain names (one per line)</span>
+              <textarea id="domains" rows="6" spellcheck="false" placeholder="example.com"></textarea>
+              <span class="row-hint">Subdomains are included automatically: <code>example.com</code> also covers <code>www.example.com</code>.</span>
+              <div class="row-actions">
+                <button id="enableAllSites" class="btn small" type="button">Turn ON for all sites</button>
+                <span class="row-hint">Sets Blacklist mode and clears the site and rule lists. Click Save changes to keep it.</span>
+              </div>
+            </div>
+            </div>
+
+            <div class="stack">
+              <span class="row-title">Custom rules (one per line)</span>
+              <textarea id="rules" rows="5" spellcheck="false" placeholder="https://*.example.org/*"></textarea>
+              <span class="row-hint">Wildcards: <code>*</code> matches any text, <code>?</code> matches one character. For example <code>*google.com/*</code> matches google.com and any URL that contains it.</span>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <footer id="savebar" class="savebar glass">
+      <span id="dirtyText" class="muted">All changes saved</span>
+      <div class="inline">
+        <button id="resetBtn" class="btn" type="button">Reset to defaults</button>
+        <button id="saveBtn" class="btn primary" type="button" disabled>Save changes</button>
+      </div>
+    </footer>
+
+    <div id="toast" class="toast" hidden></div>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

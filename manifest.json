@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Random User-Agent Switcher",
+  "short_name": "RUA Switcher",
+  "version": "5.0.0",
+  "description": "Switches your User-Agent to real Chrome, Edge, Firefox, Opera and Safari devices, on a timer or on demand. Custom User-Agents and per-site rules supported.",
+  "minimum_chrome_version": "120",
+  "icons": {
+    "16": "assets/icons/16.png",
+    "32": "assets/icons/32.png",
+    "48": "assets/icons/48.png",
+    "128": "assets/icons/128.png"
+  },
+  "action": {
+    "default_title": "Random User-Agent",
+    "default_icon": {
+      "16": "assets/icons/16.png",
+      "32": "assets/icons/32.png",
+      "48": "assets/icons/48.png",
+      "128": "assets/icons/128.png"
+    },
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "commands": {
+    "renew-useragent": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+U",
+        "mac": "Command+Shift+U"
+      },
+      "description": "Get a new User-Agent"
+    }
+  },
+  "permissions": ["alarms", "storage", "declarativeNetRequest"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/inject.js"],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true,
+      "world": "MAIN"
+    }
+  ],
+  "incognito": "spanning"
+}

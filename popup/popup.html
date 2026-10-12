@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Random User-Agent</title>
+    <link rel="stylesheet" href="../shared/ui.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body class="popup-body">
+    <main class="popup">
+      <header class="p-head">
+        <div class="logo"><img src="../assets/icons/48.png" alt="" /></div>
+        <div class="titles">
+          <div class="title">Random User-Agent</div>
+          <div id="statusLine" class="status">Loading…</div>
+        </div>
+        <label class="switch" title="Turn the whole switcher on or off">
+          <input id="masterToggle" type="checkbox" />
+          <span class="track"></span>
+        </label>
+      </header>
+
+      <section class="glass card ua-card">
+        <div class="card-top">
+          <span class="label">Active User-Agent</span>
+          <span id="activeBadge" class="badge">—</span>
+        </div>
+        <pre id="uaBox" class="ua-box">Loading…</pre>
+        <div class="ua-foot">
+          <span id="uaMeta" class="muted small"></span>
+          <button id="copyBtn" class="btn ghost small" type="button">Copy</button>
+        </div>
+      </section>
+
+      <section class="glass card site-card">
+        <div class="site-text">
+          <div class="site-title">Enabled on this site</div>
+          <div id="domainText" class="muted small">—</div>
+        </div>
+        <label class="switch" title="Switch the User-Agent on or off for this site">
+          <input id="domainToggle" type="checkbox" />
+          <span class="track"></span>
+        </label>
+      </section>
+
+      <section class="glass card">
+        <div class="label">Desktop</div>
+        <div id="desktopChips" class="chips"></div>
+        <div class="label mt">Mobile</div>
+        <div id="mobileChips" class="chips"></div>
+      </section>
+
+      <div class="actions">
+        <button id="pauseBtn" class="btn" type="button">Pause switcher</button>
+        <button id="renewBtn" class="btn primary" type="button">Get new agent</button>
+      </div>
+      <button id="testBtn" class="btn wide test-btn" type="button">User-Agent test (whatismybrowser.com)</button>
+      <button id="settingsBtn" class="btn wide settings-btn" type="button">Open settings</button>
+
+      <footer class="p-foot"><span id="version">v5.0.0</span></footer>
+    </main>
+    <div id="toast" class="toast" hidden></div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
