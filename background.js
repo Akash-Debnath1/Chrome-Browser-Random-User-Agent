@@ -227,6 +227,9 @@ const KEEPALIVE_ALARM = 'rua-keepalive';
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== KEEPALIVE_PORT) return;
   port.onMessage.addListener(() => {}); // heartbeat; receiving it resets the idle timer
+  // Read lastError when the page's port closes (for example when the page enters the
+  // back/forward cache). Without this, Chrome logs "Unchecked runtime.lastError".
+  port.onDisconnect.addListener(() => { void chrome.runtime.lastError; });
 });
 chrome.alarms.get(KEEPALIVE_ALARM).then((alarm) => {
   if (!alarm) chrome.alarms.create(KEEPALIVE_ALARM, { periodInMinutes: 0.5 });

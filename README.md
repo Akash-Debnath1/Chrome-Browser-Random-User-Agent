@@ -19,7 +19,7 @@ Switch your User-Agent to real **Chrome, Edge, Firefox, Opera and Safari** devic
   <a href="#-quick-start"><b>Quick start</b></a> ·
   <a href="#-features"><b>Features</b></a> ·
   <a href="#-how-it-works"><b>How it works</b></a> ·
-  <a href="#%EF%B8%8F-troubleshooting"><b>Troubleshooting</b></a> ·
+  <a href="#-troubleshooting"><b>Troubleshooting</b></a> ·
   <a href="#-limitations"><b>Limitations</b></a> ·
   <a href="#-বাংলায়-সংক্ষেপে"><b>বাংলায়</b></a>
 </p>
@@ -33,11 +33,11 @@ Switch your User-Agent to real **Chrome, Edge, Firefox, Opera and Safari** devic
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/settings-generator.png" alt="Generator settings with per-browser version cards" /><p align="center"><sub><b>Generator settings</b>: one glass card per browser, with OS switches and your own versions</sub></p></td>
-    <td width="50%"><img src="docs/screenshots/settings-general.png" alt="General settings" /><p align="center"><sub><b>General settings</b>: timer, startup change, JavaScript protection, blocked-site fallback, custom User-Agents</sub></p></td>
+    <td width="50%"><img src="docs/screenshots/settings-general.png" alt="General settings" /><p align="center"><sub><b>General settings</b>: timer, startup change, JavaScript protection, custom User-Agents</sub></p></td>
   </tr>
   <tr>
     <td width="50%"><img src="docs/screenshots/settings-blacklist.png" alt="Blacklist and whitelist settings" /><p align="center"><sub><b>Blacklist / Whitelist</b>: choose where the switcher runs</sub></p></td>
-    <td width="50%"><p><b>Popup</b>: the active User-Agent with <b>Copy</b>, a per-site toggle (<b>Enabled on this site</b>), a device grid, <b>Pause</b>, <b>Get new agent</b>, and a <b>User-Agent test</b> button that opens whatismybrowser.com in a new tab.</p></td>
+    <td width="50%"><p><b>Popup</b>: the active User-Agent with <b>Copy</b>, a per-site toggle (<b>Enabled on this site</b>), a device grid, <b>Pause switcher</b>, <b>Get new agent</b>, and a <b>User-Agent test (whatismybrowser.com)</b> button that opens the test page in a new tab.</p></td>
   </tr>
 </table>
 
@@ -47,7 +47,7 @@ Switch your User-Agent to real **Chrome, Edge, Firefox, Opera and Safari** devic
 
 | | Feature | What it does |
 |:-:|---|---|
-| 🎯 | **Popup** | Active User-Agent with **Copy**, a per-site toggle, device grid, **Pause**, **Get new agent**, and **Open settings**. A warning appears if the page still shows your real browser |
+| 🎯 | **Popup** | Active User-Agent with **Copy**, a per-site toggle (**Enabled on this site**), device grid, **Pause switcher**, **Get new agent**, and **Open settings**. A warning appears if the page still shows your real browser |
 | 🔍 | **User-Agent test** | One click opens [whatismybrowser.com](https://www.whatismybrowser.com/detect/what-is-my-user-agent/) in a new tab. The extension is ON there by default, so you see the new User-Agent immediately |
 | 🧬 | **Real device identities** | Built-in Chrome, Edge, Firefox, Opera and Safari User-Agents for Windows, macOS, Linux, Android and iPhone |
 | 🔢 | **Your own versions** | Add a version under any browser card (for example Chrome `200`). Built-in versions are included by default |
@@ -58,7 +58,7 @@ Switch your User-Agent to real **Chrome, Edge, Firefox, Opera and Safari** devic
 | 🛡️ | **JavaScript protection** | Makes `navigator` values (`userAgent`, `userAgentData`, `platform`, `vendor`, `maxTouchPoints`) match the chosen identity |
 | 🚫 | **Blacklist / Whitelist** | Blacklist mode (everywhere except listed sites) or whitelist mode (only listed sites). Supports subdomains and wildcard URL rules |
 | 📝 | **Custom User-Agents** | Add your own strings, one per line. Must be printable ASCII, 10–1000 characters, with a `Product/Version` token |
-| 🛟 | **Blocked-site fallback** | **On by default.** If a site answers `403` or `429` to a spoofed User-Agent (for example Akamai bot protection), the extension reloads that page once with your real User-Agent for the browser session. The popup then shows **REAL UA** and a **Try spoofing again** button. Turn the switch off in General settings to always show your chosen User-Agent |
+| 🛟 | **Blocked-site fallback** | **On by default.** If a site answers `403` or `429` to a spoofed User-Agent (for example Akamai bot protection), the extension reloads that page once with your real User-Agent for the browser session. The popup then shows **REAL UA** and a **Try spoofing again on this site** button. Turn the switch off in General settings to always show your chosen User-Agent |
 | 🔋 | **Service-worker keepalive** | A lightweight content script keeps the extension's background worker running while web pages are open, so the rules and timers stay responsive |
 | 🪟 | **Glassmorphism UI** | Glass cards, gradients and soft glow across the popup and settings page |
 
@@ -100,7 +100,7 @@ Requires **Chromium 120+**.
 - **Headers:** `User-Agent` and `Sec-CH-UA*` headers are rewritten with `declarativeNetRequest` dynamic rules. Client Hints that would reveal the real browser (full version, platform version, architecture, model) are removed.
 - **JavaScript:** Chromium-family identities also get a matching `navigator.userAgentData`. Firefox and Safari identities remove it, as those browsers do.
 - **Frames:** header and `navigator` changes also apply to iframes and `about:blank` frames.
-- **Fallback:** a `403` or `429` response to a spoofed request on a site you have enabled triggers one reload with the real User-Agent for that host. The bypass lasts for the browser session and is cleared on restart or with **Try spoofing again**.
+- **Fallback:** a `403` or `429` response to a spoofed request on a site you have enabled triggers one reload with the real User-Agent for that host. The bypass lasts for the browser session and is cleared on restart or with **Try spoofing again on this site**.
 - **Keepalive:** Chrome normally stops an idle MV3 service worker after about 30 seconds. `content/keepalive.js` opens a port to the worker and sends a small heartbeat while a page is open. A 30-second alarm acts as a backup when no page is open. Nothing else in the script runs.
 - **Storage:** all settings live in `chrome.storage.local`. Nothing is sent to a server.
 
@@ -214,6 +214,6 @@ The e2e test maps `*.test` hosts to `127.0.0.1:8080` with `--host-resolver-rules
 
 <div align="center">
 
-Made with ❤️ Engr.Akash Debnath · Plain JavaScript and CSS, no build step
+Made with ❤️ · Plain JavaScript and CSS, no build step
 
 </div>
