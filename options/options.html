@@ -88,9 +88,17 @@
             <div class="row">
               <div class="row-text">
                 <div class="row-title">Protect against detection by JavaScript</div>
-                <div class="row-hint">Makes <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code> and <code>userAgentData</code> match the new User-Agent on every page, including iframes and workers that the page creates.</div>
+                <div class="row-hint">Makes <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code> and <code>userAgentData</code> match the new User-Agent on every page, including iframes. Web Workers are not covered.</div>
               </div>
               <label class="switch"><input id="jsProtection" type="checkbox" /><span class="track"></span></label>
+            </div>
+
+            <div class="row">
+              <div class="row-text">
+                <div class="row-title">Use my real browser on blocked sites</div>
+                <div class="row-hint">On by default. If a site blocks the spoofed User-Agent (Access Denied, 403 or 429), it is loaded once with your real browser User-Agent for this browser session, and the popup shows REAL UA. Turn this off to always show your chosen User-Agent.</div>
+              </div>
+              <label class="switch"><input id="blockFallback" type="checkbox" /><span class="track"></span></label>
             </div>
           </div>
 

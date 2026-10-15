@@ -32,9 +32,15 @@ function siteState(s) {
   return { applicable: isApplicable(s.settings, url), reason: null };
 }
 
+function bypassedHere(s) {
+  const parsed = parseHttpUrl((tab && tab.url) || '');
+  return !!(parsed && (s.bypassed || []).includes(parsed.hostname));
+}
+
 function statusOf(s) {
   if (!s.settings.enabled) return { key: 'off', badge: 'OFF', text: 'Switcher is off' };
   if (s.paused) return { key: 'paused', badge: 'PAUSED', text: 'Paused – using your real User-Agent' };
+  if (bypassedHere(s)) return { key: 'real', badge: 'REAL UA', text: 'Site refused the spoofed User-Agent – using your real one here' };
   if (!parseHttpUrl((tab && tab.url) || '')) return { key: 'on', badge: 'ACTIVE', text: 'Switching User-Agent on websites' };
   if (!siteState(s).applicable) return { key: 'site-off', badge: 'SITE OFF', text: 'Off on this site – your real User-Agent is used here' };
   return { key: 'on', badge: 'ACTIVE', text: 'Switching User-Agent' };
@@ -74,6 +80,7 @@ function render() {
 
   $('pauseBtn').textContent = s.paused ? 'Resume switcher' : 'Pause switcher';
   $('renewBtn').disabled = !s.settings.enabled;
+  $('retryBtn').hidden = !bypassedHere(s);
   renderChips();
 }
 
@@ -162,6 +169,16 @@ function bind() {
     toast('User-Agent copied.');
   }));
 
+  $('retryBtn').addEventListener('click', () => run(async () => {
+    const parsed = parseHttpUrl((tab && tab.url) || '');
+    if (!parsed) return;
+    const res = await send({ type: 'clearBypass', host: parsed.hostname });
+    state = { ...state, ...res };
+    render();
+    await reloadActiveTab();
+    toast('Spoofing is back on for this site – page reloaded.');
+  }));
+
   $('testBtn').addEventListener('click', () => chrome.tabs.create({ url: 'https://www.whatismybrowser.com/detect/what-is-my-user-agent/' }));
   $('settingsBtn').addEventListener('click', () => chrome.runtime.openOptionsPage());
 
@@ -175,12 +192,37 @@ function bind() {
   });
 }
 
+/**
+ * Reads navigator.userAgent inside the page (read-only) and compares it with the chosen UA.
+ * A mismatch means Chrome is not letting the extension act on this page.
+ */
+async function checkApplied() {
+  const el = $('diagnosis');
+  el.hidden = true;
+  const s = state;
+  if (!tab || !parseHttpUrl(tab.url || '') || !s.settings.enabled || s.paused || !s.current || !s.settings.jsProtection) return;
+  if (!siteState(s).applicable || bypassedHere(s)) return;
+  let seen = null;
+  try {
+    const [r] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: () => navigator.userAgent });
+    seen = r ? r.result : null;
+  } catch (_) {
+    seen = null;
+  }
+  if (seen === s.current.ua) return;
+  el.hidden = false;
+  el.textContent = seen === null
+    ? 'Chrome is not letting the extension run on this page. Open chrome://extensions → Random User-Agent → Details → Site access → "On all sites", then reload the page.'
+    : 'This page still shows your real browser. Reload it (Ctrl+F5). If it stays the same, check Site access in chrome://extensions and turn off any other User-Agent extension.';
+}
+
 async function init() {
   $('version').textContent = `v${chrome.runtime.getManifest().version}`;
   bind();
   await loadTab();
   state = await send({ type: 'state' });
   render();
+  checkApplied().catch(() => {});
 }
 
 init().catch((err) => {

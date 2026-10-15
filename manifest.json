@@ -38,7 +38,7 @@
       "description": "Get a new User-Agent"
     }
   },
-  "permissions": ["alarms", "storage", "declarativeNetRequest"],
+  "permissions": ["alarms", "storage", "declarativeNetRequest", "webRequest", "scripting"],
   "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
@@ -48,6 +48,13 @@
       "all_frames": true,
       "match_about_blank": true,
       "world": "MAIN"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/keepalive.js"],
+      "run_at": "document_start",
+      "all_frames": false,
+      "world": "ISOLATED"
     }
   ],
   "incognito": "spanning"

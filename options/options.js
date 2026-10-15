@@ -43,6 +43,7 @@ function toDraft(s) {
     enabled: s.enabled,
     renew: { ...s.renew },
     jsProtection: s.jsProtection,
+    blockFallback: s.blockFallback,
     customUA: { enabled: s.customUA.enabled, text: s.customUA.list.join('\n') },
     generator: {
       types: [...s.generator.types],
@@ -89,6 +90,7 @@ function fromDraft(d) {
       enabled: d.enabled,
       renew: { enabled: d.renew.enabled, intervalSec: interval, onStartup: d.renew.onStartup },
       jsProtection: d.jsProtection,
+      blockFallback: d.blockFallback,
       customUA: { enabled: d.customUA.enabled, list: customLines },
       generator: {
         types: d.generator.types,
@@ -231,6 +233,7 @@ function renderForm() {
   $('intervalSec').disabled = !draft.renew.enabled;
   $('onStartup').checked = draft.renew.onStartup;
   $('jsProtection').checked = draft.jsProtection;
+  $('blockFallback').checked = draft.blockFallback;
 
   $('customEnabled').checked = draft.customUA.enabled;
   $('customList').value = draft.customUA.text;
@@ -264,6 +267,7 @@ function bindForm() {
   }
   $('onStartup').addEventListener('change', (e) => { draft.renew.onStartup = e.target.checked; renderForm(); });
   $('jsProtection').addEventListener('change', (e) => { draft.jsProtection = e.target.checked; renderForm(); });
+  $('blockFallback').addEventListener('change', (e) => { draft.blockFallback = e.target.checked; renderForm(); });
 
   $('customEnabled').addEventListener('change', (e) => { draft.customUA.enabled = e.target.checked; renderForm(); });
   $('customList').addEventListener('input', (e) => { draft.customUA.text = e.target.value; renderForm(); });

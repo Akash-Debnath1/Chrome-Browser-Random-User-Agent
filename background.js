@@ -108,7 +108,12 @@ async function ensureInitialised() {
 async function handleMessage(message) {
   switch (message && message.type) {
     case 'state':
-      return publicState(await readData());
+      return { ...publicState(await readData()), bypassed: (await bypassRules()).map(bypassHostOf) };
+
+    case 'clearBypass': {
+      await removeBypass(message.host);
+      return { bypassed: (await bypassRules()).map(bypassHostOf) };
+    }
 
     case 'saveSettings': {
       const data = await readData();
@@ -152,6 +157,59 @@ async function handleMessage(message) {
 }
 
 // ---------------------------------------------------------------------------
+// Block-page fallback (opt-in). Some bot-protection systems answer 403/429 to a spoofed identity.
+// When a main-frame 403 comes back while the switch is on for that site, that host
+// gets a session-only rule that leaves its requests alone (real UA), and the tab is
+// reloaded once. The rule lasts until the browser restarts or the user retries spoofing.
+// ---------------------------------------------------------------------------
+const BYPASS_BASE_ID = 900000;
+
+async function bypassRules() {
+  const rules = await chrome.declarativeNetRequest.getSessionRules();
+  return rules.filter((r) => r.id >= BYPASS_BASE_ID && r.action.type === 'allow');
+}
+
+function bypassHostOf(rule) {
+  return rule.condition.requestDomains ? rule.condition.requestDomains[0] : '';
+}
+
+async function addBypass(host) {
+  const used = new Set((await chrome.declarativeNetRequest.getSessionRules()).map((r) => r.id));
+  let id = BYPASS_BASE_ID;
+  while (used.has(id)) id += 1;
+  await chrome.declarativeNetRequest.updateSessionRules({
+    addRules: [{
+      id,
+      priority: 3,
+      action: { type: 'allow' },
+      condition: { requestDomains: [host], resourceTypes: ['main_frame', 'sub_frame', 'stylesheet', 'script', 'image', 'font', 'xmlhttprequest', 'media', 'websocket', 'other'] },
+    }],
+  });
+}
+
+async function removeBypass(host) {
+  const hit = (await bypassRules()).filter((r) => bypassHostOf(r) === host);
+  if (hit.length) await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: hit.map((r) => r.id) });
+}
+
+// 403 = access denied, 429 = rate limited. A 503 is not used: many sites return 503 with a normal page.
+const BLOCK_STATUSES = new Set([403, 429]);
+
+chrome.webRequest.onCompleted.addListener((details) => {
+  if (!BLOCK_STATUSES.has(details.statusCode)) return;
+  let host;
+  try { host = new URL(details.url).hostname; } catch (_) { return; }
+  exclusive(async () => {
+    const data = await readData();
+    if (!data.settings.enabled || data.paused || !data.current || !data.settings.blockFallback) return;
+    if (!isApplicable(data.settings, details.url)) return;
+    if ((await bypassRules()).some((r) => bypassHostOf(r) === host)) return; // already retried: no loop
+    await addBypass(host);
+    await chrome.tabs.reload(details.tabId);
+  });
+}, { urls: ['<all_urls>'], types: ['main_frame'] });
+
+// ---------------------------------------------------------------------------
 // Event listeners (registered synchronously at top level, as MV3 requires)
 // ---------------------------------------------------------------------------
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -159,6 +217,19 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     .then((result) => sendResponse({ ok: true, result }))
     .catch((err) => sendResponse({ ok: false, error: String(err && err.message ? err.message : err) }));
   return true; // keep the channel open for the async response
+});
+
+// Keepalive: content/keepalive.js holds a port open on web pages, which keeps this
+// service worker running. The alarm below is a backup that wakes it every 30 s
+// when no page is open. Both are harmless if the other is missing.
+const KEEPALIVE_PORT = 'rua-keepalive';
+const KEEPALIVE_ALARM = 'rua-keepalive';
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name !== KEEPALIVE_PORT) return;
+  port.onMessage.addListener(() => {}); // heartbeat; receiving it resets the idle timer
+});
+chrome.alarms.get(KEEPALIVE_ALARM).then((alarm) => {
+  if (!alarm) chrome.alarms.create(KEEPALIVE_ALARM, { periodInMinutes: 0.5 });
 });
 
 chrome.alarms.onAlarm.addListener((alarm) => {
