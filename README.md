@@ -214,6 +214,6 @@ The e2e test maps `*.test` hosts to `127.0.0.1:8080` with `--host-resolver-rules
 
 <div align="center">
 
-Made with ❤️ · Plain JavaScript and CSS, no build step
+Made with ❤️ Engr.Akash Debnath · Plain JavaScript and CSS, no build step
 
 </div>
